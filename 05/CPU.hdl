@@ -1,0 +1,122 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/CPU.hdl
+
+/**
+ * The Hack CPU (Central Processing unit), consisting of an ALU,
+ * two registers named A and D, and a program counter named PC.
+ * The CPU is designed to fetch and execute instructions written in 
+ * the Hack machine language. In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine 
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input 
+ * holds the value of this location. If the current instruction needs 
+ * to write a value to M, the value is placed in outM, the address 
+ * of the target location is placed in the addressM output, and the 
+ * writeM control bit is asserted. (When writeM==0, any value may 
+ * appear in outM). The outM and writeM outputs are combinational: 
+ * they are affected instantaneously by the execution of the current 
+ * instruction. The addressM and pc outputs are clocked: although they 
+ * are affected by the execution of the current instruction, they commit 
+ * to their new values only in the next time step. If reset==1 then the 
+ * CPU jumps to address 0 (i.e. pc is set to 0 in next time step) rather 
+ * than to the address resulting from executing the current instruction. 
+ */
+
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    // Put your code here:
+    // 依据CPU示意图，我们先处理Instruction handling，然后处理ALU，最后处理PC
+
+    // 获取instruction的种类，如果是A则15位为0，C为1
+    // 为了方便，我们设置A-instruction和Cinstruction为变量名
+    Not(in=instruction[15], out=Ainstruction);
+    Not(in=Ainstruction, out=Cinstruction);
+
+    // 我们先计算出第一个Mux16所需要的c
+    // 为什么是5呢，5的话是C-instruction的dest的第一位
+    // 在C-instruction中，如果dest第一位是1，则要存一次ARegister
+    And(a=Cinstruction, b=instruction[5], out=Mux16SelA);
+    // 通过Mux16计算ARegister的in
+    Mux16(a=instruction, b=ALUout, sel=Mux16SelA, out=AReIn);
+    
+    // loadA决定要不要进行一次Register更新数据或者是保持数据
+    // if load [t-1] = 1 , out[t] = in[t-1]
+    // else out[t] = out[t-1]
+    // 不管是这次操作是A-instruction，或者是C-instruction中dest第一位是1
+    // 都可以进行一次Register
+    Or(a=Ainstruction, b=Mux16SelA, out=loadA);
+    
+    ARegister(in=AReIn, load=loadA, out=Aout);
+    
+    // 进行一次DRegister
+    // 根据示意图来写就可以了，原理同ARegister
+    // 如果dest第二位是1，就要存一次DRegister
+    And(a=Cinstruction, b=instruction[4], out=loadD);
+    DRegister(in=ALUout, load=loadD, out=Dout);
+    
+    // 第二个Mux16
+    // 根据示意图，是inM和Aout进行Mux
+    // 也就是根据C-instruction的第12位，也就是comp中的a
+    // 如果comp中 a = 0，用到的就是A，否则为M
+    Mux16(a=Aout, b=inM, sel=instruction[12], out=AorMout);
+    
+    // 第二部分，ALU计算单元，也就是C-instruction中的comp
+    // ALU计算规则同comp一样
+    // zx到no也就是instruction中6..11
+    ALU(x=Dout, y=AorMout, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=ALUout, zr=ZRout, ng=NGout);
+
+    // 将addressM，outM，writeM写出
+    Or16(a=false, b=Aout, out[0..14]=addressM);
+    Or16(a=false, b=ALUout, out=outM);
+    And(a=Cinstruction, b=instruction[3], out=writeM);
+
+    // 第三部分，使用PC
+    // ALU剩下的ZRout和NGout是为了判断C-instruction的jump部分
+    // if out = 0 , zr = 1 else zr = 0
+    // if out < 0 , ng = 1 else ng = 0
+    // 其实zr就是Zero，ng就是Negative这样好记一些
+    // 我们 out 也就是C-instruction中jump中的comp
+    // 通过 zr ，ng ，jump中情况中只有一位是 1 用And来算出比较简单的情况
+    // 比如 JGT ， JEQ ， JLT
+    // 然后用简单的情况 Or 来计算其他情况
+    // 虽然我们最后只用到jmp
+    And(a=ZRout, b=instruction[1], out=jeq);
+
+    And(a=NGout, b=instruction[2], out=jlt);
+
+    // 由于没有直接代表Positive的数，我们用ZRout和NGout算出来
+    Or(a=ZRout, b=NGout, out=ZeroOrNeg);
+    Not(in=ZeroOrNeg, out=Posout);
+    And(a=Posout, b=instruction[0], out=jgt);
+
+    // 接下来用得到的计算其他情况
+    Or(a=jgt, b=jeq, out=jge);
+
+    Or(a=jgt, b=jlt, out=jne);
+
+    Or(a=jlt, b=jeq, out=jle);
+
+    Or(a=jle, b=jgt, out=jmp);
+
+    //计算PC中load，如果load为0，则inc一定为1
+    And(a=Cinstruction, b=jmp, out=PCload);
+    
+    Not(in=PCload, out=PCinc);
+
+    PC(in=Aout, load=PCload, inc=PCinc, reset=reset, out[0..14]=pc); 
+}

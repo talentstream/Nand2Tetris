@@ -1,0 +1,15 @@
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\bin\Debug\net6.0\assembler.exe
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\bin\Debug\net6.0\assembler.deps.json
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\bin\Debug\net6.0\assembler.runtimeconfig.json
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\bin\Debug\net6.0\assembler.dll
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\bin\Debug\net6.0\assembler.pdb
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\assembler.csproj.AssemblyReference.cache
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\assembler.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\assembler.AssemblyInfoInputs.cache
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\assembler.AssemblyInfo.cs
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\assembler.csproj.CoreCompileInputs.cache
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\assembler.dll
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\refint\assembler.dll
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\assembler.pdb
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\assembler.genruntimeconfig.cache
+C:\Users\Lenovo\Desktop\nand2tetris\projects\06\assembler\assembler\obj\Debug\net6.0\ref\assembler.dll
